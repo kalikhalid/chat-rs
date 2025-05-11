@@ -65,6 +65,7 @@ dependencies = [
  "num-iter",
  "num-traits",
  "rand",
+ "rand_chacha",
  "tokio",
 ]
 

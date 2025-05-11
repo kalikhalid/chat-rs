@@ -1,10 +1,11 @@
 use tokio::io::{stdin, stdout};
-use rsa::rabbin_test;
+use crate::rsa::rsa::KeyPair;
 use num_bigint::BigUint;
 
 mod rsa;
 
 #[tokio::main]
 async fn main() {
-    println!("{}", rabbin_test(&BigUint::from(2305843009213693951u128), 5));
+    let kp = KeyPair::new(None, None);
+    println!("{:?}", kp.print());
 }
