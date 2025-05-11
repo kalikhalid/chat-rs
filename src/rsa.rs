@@ -1,33 +1,43 @@
 use num_bigint::{BigUint, RandBigInt, ToBigUint};
+use num_integer::Integer;
+use num_traits::{One, Zero};
 use rand::thread_rng;
 
-fn rabbin_test(n: &BigUint, k: u32) -> bool{
-    if n % 2u8 == BigUint::ZERO{
+pub fn rabbin_test(n: &BigUint, k: u32) -> bool {
+    if n <= &BigUint::one() || n.is_even() {
         return false;
     }
-    if *n <= BigUint::from(1u8){
-        return false;
-    }
-    if *n <= BigUint::from(3u8){
+    if n == &3u8.to_biguint().unwrap() {
         return true;
     }
-    let mut rng = thread_rng();
-    let (mut r, mut s): (BigUint, BigUint) = (BigUint::ZERO, n-1u8);
-    while &s % 2u8 == BigUint::ZERO{
-        r += 1u8;
-        s /= 2u8;
-    }
-    for _ in 0..k{
-        let a = rng.gen_biguint_range(&BigUint::from(2u8), n);
-        let x = a.modpow(&s, n);
-        if x == 1u8 || x == n - 1u8{
-            continue;
-        }
-        for __ in 0..(r-1){
-            
-        }
+
+    // разложение n - 1 = 2^r * s
+    let one = BigUint::one();
+    let two = &one + &one;
+    let mut s = n - &one;
+    let mut r = 0u32;
+    while s.is_even() {
+        s >>= 1; // быстрее, чем s /= 2
+        r += 1;
     }
 
-    
-    false
+    let mut rng = thread_rng();
+    'witness_loop: for _ in 0..k {
+        let a = rng.gen_biguint_range(&two, &(n - &one)); // a ∈ [2, n-2]
+        let mut x = a.modpow(&s, n);
+
+        if x == one || x == n - &one {
+            continue;
+        }
+
+        for _ in 0..(r - 1) {
+            x = x.modpow(&two, n);
+            if x == n - &one {
+                continue 'witness_loop;
+            }
+        }
+        return false; // составное число
+    }
+    true // вероятно простое
 }
+
